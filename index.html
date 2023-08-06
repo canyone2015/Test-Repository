@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="keywords" content="test repository">
+    <meta name="description" content="Test Repository">
+    <title>Test Repository</title>
+    <style>
+        html {
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        body {
+            text-align:center;
+        }
+        body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+            margin: 0;
+            padding: 0;
+            font-weight: normal;
+        }
+        #main {
+            padding-top: 25px;
+            padding-bottom: 25px;
+        }
+        button {
+            width: 100px;
+            height: 75px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+    <script type="text/javascript">
+        function getSettings() {
+            let defParameters = {
+                "n_figures": 1,
+                "figure_size": 400,
+                "n_lines": 30,
+                "line_width": 6,
+                "delay": 100,
+                "cols": 2
+            };
+            let parameters = {};
+            Object.keys(defParameters).forEach((param) => {
+                let tmp = localStorage.getItem(param);
+                if (tmp != null) {
+                    parameters[param] = tmp;
+                }
+                else {
+                    parameters[param] = defParameters[param];
+                }
+            });
+            return parameters;
+        }
+        var settings = getSettings();
+        var interval_state = null;
+        function setSetting(key, value) {
+            localStorage.setItem(key, value);
+            settings[key] = localStorage.getItem(key);
+        }
+        function makeInterval() {
+            interval_state = setInterval(function () {
+                let figures = document.getElementById('figures').children;
+                for (const el of figures) {
+                    if (el.children.length > 0) {
+                        let is_hidden = el.children[0].hidden;
+                        if (is_hidden) {
+                            el.children[0].hidden = false;
+                            el.children[1].hidden = true;
+                        }
+                        else {
+                            el.children[0].hidden = true;
+                            el.children[1].hidden = false;
+                        }
+                    }
+                }
+            }, settings['delay']);
+        }
+        function initFigures() {
+            let n_figures = parseInt(settings['n_figures']);
+            let cols = parseInt(settings['cols']);
+            let figures_div = document.getElementById('figures');
+            figures_div.textContent = '';
+            for (let i = 0; i < n_figures; ++i) {
+                if (i > 0 && i % cols === 0) {
+                    figures_div.appendChild(document.createElement('br'));
+                }
+                figures_div.appendChild(createFigure());
+            }
+        }
+        function initGui() {
+            let menu_div = document.getElementById('menu');
+            menu_div.textContent = '';
+            menu_div.appendChild(createButton("Add", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                let figures = document.getElementById('figures');
+                setSetting('n_figures', Math.min(20, parseInt(settings['n_figures']) + 1));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("Remove", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                let figures = document.getElementById('figures');
+                setSetting('n_figures', Math.max(0, parseInt(settings['n_figures']) - 1));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("Start/Stop", function () {
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                }
+                else {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("Reset", function () {
+                if (confirm('Are you sure you want to reset the settings?') == true) {
+                    for (let x of Object.entries(settings)) {
+                        localStorage.removeItem(x[0]);
+                    }
+                    settings = getSettings();
+                    initGui();
+                }
+            }));
+            menu_div.appendChild(document.createElement('br'));
+            menu_div.appendChild(createButton("+Size", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('figure_size', Math.max(30, Math.min(400, parseInt(settings['figure_size']) + 10)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("-Size", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('figure_size', Math.max(30, Math.min(400, parseInt(settings['figure_size']) - 10)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("+Delay", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('delay', Math.max(50, Math.min(400, parseInt(settings['delay']) + 25)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("-Delay", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('delay', Math.max(50, Math.min(400, parseInt(settings['delay']) - 25)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(document.createElement('br'));
+            menu_div.appendChild(createButton("+Line", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('n_lines', Math.max(4, Math.min(30, parseInt(settings['n_lines']) + 1)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("-Line", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('n_lines', Math.max(4, Math.min(30, parseInt(settings['n_lines']) - 1)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("+LineSize", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('line_width', Math.max(1, Math.min(30, parseInt(settings['line_width']) + 1)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("-LineSize", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('line_width', Math.max(1, Math.min(30, parseInt(settings['line_width']) - 1)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("+Col", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('cols', Math.max(1, Math.min(10, parseInt(settings['cols']) + 1)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            menu_div.appendChild(createButton("-Col", function () {
+                let b = false;
+                if (interval_state !== null) {
+                    clearInterval(interval_state);
+                    interval_state = null;
+                    b = true;
+                }
+                setSetting('cols', Math.max(1, Math.min(10, parseInt(settings['cols']) - 1)));
+                initFigures();
+                if (b) {
+                    makeInterval();
+                }
+            }));
+            initFigures();
+        }
+        function createButton(text, func) {
+            let button = document.createElement('button');
+            button.innerHTML = text;
+            button.onmouseup = func;
+            return button;
+        }
+        function createFigure() {
+            let width = parseInt(settings['figure_size']);
+            let lineWidth = parseInt(settings['line_width']);
+            let n_lines = parseInt(settings['n_lines']);
+            let figure = document.createElement('div');
+            let color = 'black';
+            figure.style.display = 'inline';
+            let canvas1 = document.createElement('canvas');
+            canvas1.width = width;
+            canvas1.height = width;
+            let canvas2 = document.createElement('canvas');
+            canvas2.width = width;
+            canvas2.height = width;
+
+            let ctx1 = canvas1.getContext('2d');
+            ctx1.lineWidth = lineWidth;
+            ctx1.strokeStyle = color;
+            let A = 0, dA = 2 * Math.PI / n_lines, w2 = width / 2, wd = width / 2 - 2;
+            ctx1.translate(w2, w2);
+            ctx1.beginPath();
+            for (var i = 1; i <= n_lines; ++i){
+                ctx1.moveTo(0, 0);
+                ctx1.lineTo(Math.trunc(wd * Math.cos(A)), Math.trunc(wd * Math.sin(A)));
+                A += dA;
+            }
+            ctx1.closePath();
+            ctx1.stroke();
+
+            let ctx2 = canvas2.getContext('2d');
+            ctx2.lineWidth = lineWidth;
+            ctx2.strokeStyle = color;
+            A = dA / 2;
+            ctx2.translate(w2, w2);
+            ctx2.beginPath();
+            for (var i = 1; i <= n_lines; ++i){
+                ctx2.moveTo(0, 0);
+                ctx2.lineTo(Math.trunc(wd * Math.cos(A)), Math.trunc(wd * Math.sin(A)));
+                A += dA;
+            }
+            ctx2.closePath();
+            ctx2.stroke();
+
+            canvas1.hidden = true;
+            canvas2.hidden = false;
+
+            figure.appendChild(canvas1);
+            figure.appendChild(canvas2);
+            return figure;
+        }
+    </script>
+  </head>
+  <body style="text-align:center;">
+    <div id="main">
+        <div id="menu">
+        </div>
+        <div id="figures">
+        </div>
+    </div>
+    <script type="text/javascript">
+        initGui();
+    </script>
+  </body>
+</html>
